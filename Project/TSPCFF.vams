@@ -1,0 +1,43 @@
+// In order to check signal definitions
+`default_nettype none
+// In order to avoid confusion between Q ports and charges...
+`define VAMS_ELEC_DIS_ONLY
+`include "disciplines.vams"
+module INV ( VDD , VSS , A , Y );
+  inout       VDD ,  VSS ,  A , Y ;
+  parameter WN = 145e-09;
+  parameter WP = 214e-09;
+  electrical VDD ;
+  electrical VSS ;
+  electrical A ;
+  electrical Y ;
+  g45n1svt #( .l(4.5e-08), .w(WN))  mn0 ( .d(Y) , .g(A) , .s(VSS), .b(VSS));
+  g45p1svt #( .l(4.5e-08), .w(WP))  mp0 ( .d(Y) , .g(A) , .s(VDD) , .b(VDD));
+endmodule
+
+module TSPCFF (CK, D, Y, VDD, VSS);
+  inout       CK, D, Y, VDD, VSS;
+  electrical CK;
+  electrical D;
+  electrical Y;
+  electrical VDD;
+  electrical VSS;
+  electrical x;
+  electrical y;
+  electrical a;
+  electrical b;
+  electrical c;
+  electrical CKb;
+  electrical Qb;
+  INV #(.WN(145e-09), .WP(214e-09)) inv_ck (.VDD(VDD), .VSS(VSS), .A(CK), .Y(CKb));
+  g45n1svt #( .l(4.5e-08), .w(14.5e-08))  mn1 ( .d(a) , .g(D) , .s(VSS), .b(VSS));
+  g45n1svt #( .l(4.5e-08), .w(14.5e-08))  mn2 ( .d(y) , .g(CKb) , .s(VSS), .b(VSS));
+  g45n1svt #( .l(4.5e-08), .w(14.5e-08))  mn3 ( .d(Qb) , .g(y) , .s(VSS), .b(VSS));
+  g45n1svt #( .l(4.5e-08), .w(14.5e-08))  mn4 ( .d(x) , .g(CKb) , .s(a), .b(VSS));
+  g45p1svt #( .l(4.5e-08), .w(21.4e-08))  mp1 ( .d(x) , .g(D) , .s(VDD) , .b(VDD));
+  g45p1svt #( .l(4.5e-08), .w(21.4e-08))  mp2 ( .d(b) , .g(CKb) , .s(VDD) , .b(VDD));
+  g45p1svt #( .l(4.5e-08), .w(21.4e-08))  mp3 ( .d(c) , .g(y) , .s(VDD) , .b(VDD));
+  g45p1svt #( .l(4.5e-08), .w(21.4e-08))  mp4 ( .d(y) , .g(x) , .s(b) , .b(VDD));
+  g45p1svt #( .l(4.5e-08), .w(21.4e-08))  mp5 ( .d(Qb) , .g(CKb) , .s(c) , .b(VDD));
+  INV #(.WN(260e-09), .WP(390e-09)) inv_q (.VDD(VDD), .VSS(VSS), .A(Qb), .Y(Y));
+ endmodule
